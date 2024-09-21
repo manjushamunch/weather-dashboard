@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Weather Dashboard</title>
+
+    <!-- Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+      crossorigin="anonymous"
+    />
+
+    <!-- Font Awesome CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css"
+    />
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" type="text/css" href="./css/style.css" />
+
+    <!-- Script for Map Initialization (Module) -->
+    <script src="./js/map.js"></script>
+
+    <!-- Google Maps API (Ensure valid API key is set) -->
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBV6E0IoKUcdg5-3Vj4lyVecTeaObLXZZo&callback=initMap&libraries=places"
+      async
+      defer
+    ></script>
+    <script src="https://unpkg.com/i18next/i18next.min.js"></script>
+    <script src="https://unpkg.com/i18next-http-backend/i18nextHttpBackend.min.js"></script>
+  </head>
+
+  <body>
+    <!-- Header Section -->
+    <header
+      class="container-fluid text-center text-white bg-info bg-gradient p-2"
+    >
+      <div class="row">
+        <div class="col-md-6">
+          <h1 id="header-title"></h1>
+        </div>
+        <div class="col-md-2">
+          <button id="toggle-theme" class="btn btn-secondary">Toggle Dark Mode</button>
+        </div>
+        <div class="col-md-2">
+          <select id="language-selector">
+            <option value="en">English</option>
+            <option value="es">Español</option>
+          </select>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Section -->
+    <div class="container-fluid">
+      <!-- Search Section -->
+      <div class="row justify-content-center m-4">
+        <div class="col-lg-10">
+          <h5 class="mt-1" id="search_for_city"></h5>
+          <div class="input-group mb-3">
+            <input
+              id="text-city"
+              type="text"
+              class="form-control"
+              placeholder="Enter a city"
+              aria-label="Enter a city"
+            />
+            <div class="input-group-append">
+              <button class="btn btn-primary" type="button" id="btn-search">
+                <i class="fas fa-search"></i>
+              </button>
+            </div>
+            <button
+              type="button"
+              class="btn btn-outline-primary"
+              id="btn-advanced-search"
+            >
+              Advanced Search
+            </button>
+          </div>
+        </div>
+        <div class="col-lg-10">
+          <div class="input-group mb-3">
+            <div class="mx-3">
+              <input
+                type="checkbox"
+                name="show_temperature"
+                id="show_temperature"
+                checked="checked"
+              />
+              <label for="changetype-all" id="show_temperature_label">Temperature</label>
+            </div>
+            <div class="mx-3">
+              <input
+                type="checkbox"
+                name="show_humidity"
+                id="show_humidity"
+                checked="checked"
+              />
+              <label for="changetype-all" id="show_humidity_label">Humidity</label>
+            </div>
+            <div class="mx-3">
+              <input
+                type="checkbox"
+                name="show_Wind_Speed"
+                id="show_wind_speed"
+                checked="checked"
+              />
+              <label for="changetype-all" id="show_wind_speed_label">Wind Speed</label>
+            </div>
+          </div>
+
+          <!-- Advanced Search Section (Initially Hidden) -->
+          <div class="row mx-2 d-none" id="content-advanced-search">
+            <div class="col-12 card">
+              <div class="row">
+                <div class="col order-first">
+                  <div id="type-selector" class="pac-controls">
+                    <input
+                      type="radio"
+                      name="type"
+                      id="changetype-all"
+                      checked="checked"
+                    />
+                    <label for="changetype-all">All</label>
+
+                    <input
+                      type="radio"
+                      name="type"
+                      id="changetype-establishment"
+                    />
+                    <label for="changetype-establishment" id="establishment"
+                      >Establishment</label
+                    >
+
+                    <input type="radio" name="type" id="changetype-address" />
+                    <label for="changetype-address" id="address">Address</label>
+
+                    <input type="radio" name="type" id="changetype-geocode" />
+                    <label for="changetype-geocode" id="geocode">Geocode</label>
+
+                    <input type="radio" name="type" id="changetype-cities" />
+                    <label for="changetype-cities" id="cities">Cities</label>
+
+                    <input type="radio" name="type" id="changetype-regions" />
+                    <label for="changetype-regions" id="regions">Regions</label>
+                  </div>
+                </div>
+                <div class="d-grid justify-content-md-end">
+                  <div id="strict-bounds-selector" class="pac-controls">
+                    <input
+                      type="checkbox"
+                      id="use-location-bias"
+                      value=""
+                      checked
+                    />
+                    <label for="use-location-bias" id="bias_to_map_viewport"
+                      >Bias to map viewport</label
+                    >
+
+                    <input type="checkbox" id="use-strict-bounds" value="" />
+                    <label for="use-strict-bounds" id="strict_bounds"
+                      >Strict bounds</label
+                    >
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col order-first">
+                  <div id="pac-container">
+                    <!-- Autocomplete input field -->
+                    <input
+                      id="pac-input"
+                      type="text"
+                      placeholder="Enter a location"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Weather Display Section -->
+      <div class="row justify-content-center mx-4">
+        <div class="col-lg-10"></div>
+      </div>
+
+      <!-- Weather Forecast Section -->
+      <div class="row justify-content-center m-4">
+        <div class="col-lg-10">
+          <div class="row">
+            <!-- Today's Weather Section -->
+            <div
+              class="col-lg-3 card d-none bg-light bg-gradient"
+              id="today-weather"
+            >
+              <div class="card-body">
+                <h3 id="txt-city-name" class="city-name align-middle"></h3>
+                <img id="current-pic" alt="" />
+                <p id="temperature"></p>
+                <p id="humidity"></p>
+                <p id="wind-speed"></p>
+                <p id="weather-info"></p>
+                <p id="UV-index"></p>
+                <p id="aqi-info"></p>
+              </div>
+            </div>
+
+            <!-- 5-Day Forecast Section -->
+            <div class="col-lg-9 card d-none" id="fiveday-header">
+              <div class="row p-3">
+                <div class="col-6">
+                  <h3>5-Day Forecast</h3>
+                </div>
+                <div class="col-3">
+                  <label id="temp_unit">Temperature Unit</label>
+                  <select id="selTempUnit">
+                    <option value="F">F</option>
+                    <option value="C">C</option>
+                  </select>
+                </div>
+                <div class="col-3">
+                  <label id="wind_unit">Wind Unit</label>
+                  <select id="selWindUnit">
+                    <option value="ms">Miles</option>
+                    <option value="kms">KM</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row px-3">
+                <div
+                  class="col-md-2 forecast bg-info bg-gradient text-white m-2 rounded"
+                ></div>
+                <div
+                  class="col-md-2 forecast bg-info bg-gradient text-white m-2 rounded"
+                ></div>
+                <div
+                  class="col-md-2 forecast bg-info bg-gradient text-white m-2 rounded"
+                ></div>
+                <div
+                  class="col-md-2 forecast bg-info bg-gradient text-white m-2 rounded"
+                ></div>
+                <div
+                  class="col-md-2 forecast bg-info bg-gradient text-white m-2 rounded"
+                ></div>
+              </div>
+
+              <!-- Map Section -->
+              <div class="row px-3">
+                <div class="col-md-12 m-2 rounded" id="map"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Axios for HTTP Requests -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+    <!-- Custom Script for App Logic -->
+    <script src="./js/script.js" defer></script>
+    <script>
+      i18next
+        .use(i18nextHttpBackend) // Use the HTTP backend to load translations
+        .init(
+          {
+            lng: "en", // Default language
+            debug: true, // Enable debug mode (optional)
+            backend: {
+              loadPath: "/locales/{{lng}}/translation.json", // Path to load translation files
+            },
+          },
+          function (err, t) {
+            if (err) console.error(err);
+            updateContent();
+          }
+        );
+      function updateContent() {
+        document.getElementById("header-title").innerText =
+          i18next.t("header_title");
+        document.getElementById("text-city").placeholder =
+          i18next.t("search_placeholder");
+        document.getElementById("btn-search").innerText =
+          i18next.t("search_button");
+        document.getElementById("btn-advanced-search").innerText = i18next.t(
+          "advanced_search_button"
+        );
+        document.getElementById("show_temperature_label").textContent = i18next.t("Temperature");
+        document.getElementById("show_humidity_label").textContent = i18next.t("Humidity");
+        document.getElementById("show_wind_speed_label").textContent = i18next.t("Wind_Speed");
+        document.getElementById(
+          "selTempUnit"
+        ).previousElementSibling.innerText = i18next.t(
+          "temperature_unit_label"
+        );
+        document.getElementById(
+          "selWindUnit"
+        ).previousElementSibling.innerText = i18next.t("wind_unit_label");
+        document
+          .getElementById("fiveday-header")
+          .querySelector("h3").innerText = i18next.t("forecast_title");
+        document.getElementById("toggle-theme").innerText =
+          i18next.t("toggle_dark_mode");
+        document.getElementById("establishment").innerHTML =
+          i18next.t("establishment");
+        document.getElementById("address").innerHTML = i18next.t("address");
+        document.getElementById("geocode").innerHTML = i18next.t("geocode");
+        document.getElementById("cities").innerHTML = i18next.t("cities");
+        document.getElementById("regions").innerHTML = i18next.t("regions");
+        document.getElementById("bias_to_map_viewport").innerHTML = i18next.t(
+          "bias_to_map_viewport"
+        );
+        document.getElementById("strict_bounds").innerHTML =
+          i18next.t("strict_bounds");
+      }
+
+      // Language selector change
+      document
+        .getElementById("language-selector")
+        .addEventListener("change", (event) => {
+          i18next.changeLanguage(event.target.value, function (err, t) {
+            if (err) return console.error(err);
+            updateContent();
+          });
+        });
+    </script>
+  </body>
+</html>
